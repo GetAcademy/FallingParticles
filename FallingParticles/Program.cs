@@ -7,8 +7,8 @@ class Program
     static string paddle = "========";
     static List<Particle> particles = new List<Particle>();
     static bool isGameOver = false;
-    static int level = 1;
-    static int score = 1;
+    static int level;
+    static int score;
     static int gameRoundsBetweenSpawn;
     private static readonly Random random = new Random();
 
@@ -16,37 +16,49 @@ class Program
     {
         Console.CursorVisible = false;
         Console.WindowWidth = 80;
-        InitializeGame();
-        var levelCount = 0;
-        var roundCount = 40;
-        while (!isGameOver)
+        while (true)
         {
-            DrawGame();
-            MovePaddle();
-            MoveParticles();
-            CheckCollision();
-            if (roundCount >= gameRoundsBetweenSpawn)
+            InitializeGame();
+            var levelCount = 0;
+            var roundCount = 45;
+            while (true)
             {
-                SpawnParticles();
-                InitGameRoundsBetweenSpawn();
-                roundCount = 0;
-            }
-            roundCount++;
-            levelCount++;
-            if (levelCount == 50) level++;
-            Thread.Sleep(100);
-        }
+                DrawGame();
+                MovePaddle();
+                MoveParticles();
+                var hasLostParticle = CheckLostParticle();
+                if (hasLostParticle) break;
+                if (roundCount >= gameRoundsBetweenSpawn)
+                {
+                    SpawnParticles();
+                    InitGameRoundsBetweenSpawn();
+                    roundCount = 0;
+                }
 
-        Console.WriteLine("Game Over!");
-        Console.ReadLine();
+                roundCount++;
+                levelCount++;
+                if (levelCount == 100)
+                {
+                    levelCount = 0;
+                    level++;
+                }
+                Thread.Sleep(100);
+            }
+            var text = "Game Over! Press ENTER to restart";
+            Console.SetCursorPosition(40 - text.Length / 2, 5);
+            Console.WriteLine(text);
+            Console.ReadLine();
+        }
     }
 
     static void InitializeGame()
     {
         var centerX = Console.WindowWidth / 2;
-        paddlePosition = centerX - centerX % paddleMoveDistance;
+        paddlePosition = centerX - (centerX % paddleMoveDistance);
         particles.Clear();
         isGameOver = false;
+        score = 0;
+        level = 1;
         InitGameRoundsBetweenSpawn();
     }
 
@@ -67,7 +79,9 @@ class Program
 
         foreach (var particle in particles)
         {
-            Console.SetCursorPosition(particle.X, particle.Y);
+            var particleX = (int)Math.Floor(particle.X);
+            var particleY = (int)Math.Floor(particle.Y);
+            Console.SetCursorPosition(particleX, particleY);
             Console.Write("O");
         }
     }
@@ -92,8 +106,8 @@ class Program
         for (var index = particles.Count - 1; index >= 0; index--)
         {
             var particle = particles[index];
-            particle.Y++;
-            if (particle.Y >= Console.WindowHeight - 1)
+            particle.Y += 0.5f;
+            if (particle.Y > Console.WindowHeight - 1)
             {
                 score++;
                 particles.Remove(particle);
@@ -101,16 +115,18 @@ class Program
         }
     }
 
-    static void CheckCollision()
+    static bool CheckLostParticle()
     {
         foreach (var particle in particles)
         {
-            if (particle.X == paddlePosition && particle.Y == Console.WindowHeight - 1)
+            if ((particle.X < paddlePosition || particle.X > paddlePosition + paddle.Length)
+                && particle.Y == Console.WindowHeight - 1)
             {
-                isGameOver = true;
-                break;
+                return true;
             }
         }
+
+        return false;
     }
 
     static void SpawnParticles()
