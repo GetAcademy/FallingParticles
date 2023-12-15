@@ -6,12 +6,16 @@ class Program
     static string paddle = "========";
     static List<Particle> particles = new List<Particle>();
     static bool isGameOver = false;
+    static int level = 1;
     private static readonly Random random = new Random();
 
     static void Main()
     {
         Console.CursorVisible = false;
+        Console.WindowWidth = 80;
         InitializeGame();
+        var waitForSpawn = 0;
+        var count = 0;
 
         while (!isGameOver)
         {
@@ -19,7 +23,18 @@ class Program
             MovePaddle();
             MoveParticles();
             CheckCollision();
-            SpawnParticles();
+            if (waitForSpawn == 50 / level)
+            {
+                SpawnParticles();
+                waitForSpawn = 0;
+            }
+            else
+            {
+                waitForSpawn++;
+            }
+
+            count++;
+            if (count == 50) level++;
             Thread.Sleep(100); // Legg til en kort forsinkelse for bedre synlighet
             Console.Clear();
         }
@@ -37,6 +52,8 @@ class Program
 
     static void DrawGame()
     {
+        Console.SetCursorPosition(71, 0);
+        Console.Write($"Level: {level}");
         Console.SetCursorPosition(paddlePosition, Console.WindowHeight - 1);
         Console.Write(paddle);
 
@@ -68,8 +85,6 @@ class Program
         foreach (var particle in particles.ToList())
         {
             particle.Y++;
-
-            // Remove particles that have reached the bottom
             if (particle.Y >= Console.WindowHeight - 1)
             {
                 particles.Remove(particle);
@@ -91,16 +106,11 @@ class Program
 
     static void SpawnParticles()
     {
-        // Randomly spawn particles at the top
-        if (random.Next(0, 100) < 10)
+        var newParticle = new Particle
         {
-            Particle newParticle = new Particle
-            {
-                X = random.Next(0, Console.WindowWidth),
-                Y = 0
-            };
-
-            particles.Add(newParticle);
-        }
+            X = random.Next(0, Console.WindowWidth),
+            Y = 0
+        };
+        particles.Add(newParticle);
     }
 }
