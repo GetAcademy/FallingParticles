@@ -3,10 +3,13 @@
 class Program
 {
     static int paddlePosition;
+    private static int paddleMoveDistance = 6;
     static string paddle = "========";
     static List<Particle> particles = new List<Particle>();
     static bool isGameOver = false;
     static int level = 1;
+    static int score = 1;
+    static int gameRoundsBetweenSpawn;
     private static readonly Random random = new Random();
 
     static void Main()
@@ -14,29 +17,24 @@ class Program
         Console.CursorVisible = false;
         Console.WindowWidth = 80;
         InitializeGame();
-        var waitForSpawn = 0;
-        var count = 0;
-
+        var levelCount = 0;
+        var roundCount = 40;
         while (!isGameOver)
         {
             DrawGame();
             MovePaddle();
             MoveParticles();
             CheckCollision();
-            if (waitForSpawn == 50 / level)
+            if (roundCount >= gameRoundsBetweenSpawn)
             {
                 SpawnParticles();
-                waitForSpawn = 0;
+                InitGameRoundsBetweenSpawn();
+                roundCount = 0;
             }
-            else
-            {
-                waitForSpawn++;
-            }
-
-            count++;
-            if (count == 50) level++;
-            Thread.Sleep(100); // Legg til en kort forsinkelse for bedre synlighet
-            Console.Clear();
+            roundCount++;
+            levelCount++;
+            if (levelCount == 50) level++;
+            Thread.Sleep(100);
         }
 
         Console.WriteLine("Game Over!");
@@ -45,13 +43,23 @@ class Program
 
     static void InitializeGame()
     {
-        paddlePosition = Console.WindowWidth / 2 - (Console.WindowWidth % 8);
+        var centerX = Console.WindowWidth / 2;
+        paddlePosition = centerX - centerX % paddleMoveDistance;
         particles.Clear();
         isGameOver = false;
+        InitGameRoundsBetweenSpawn();
+    }
+
+    static void InitGameRoundsBetweenSpawn()
+    {
+        gameRoundsBetweenSpawn = 50 / level;
     }
 
     static void DrawGame()
     {
+        Console.Clear();
+        Console.SetCursorPosition(60, 0);
+        Console.Write($"Score: {score}");
         Console.SetCursorPosition(71, 0);
         Console.Write($"Level: {level}");
         Console.SetCursorPosition(paddlePosition, Console.WindowHeight - 1);
@@ -69,24 +77,25 @@ class Program
         if (Console.KeyAvailable)
         {
             var key = Console.ReadKey(true);
-            if (key.Key == ConsoleKey.LeftArrow && paddlePosition >= paddle.Length)
+            var moveLeft = key.Key == ConsoleKey.LeftArrow && paddlePosition >= paddleMoveDistance;
+            var moveRight = key.Key == ConsoleKey.RightArrow && paddlePosition < Console.WindowWidth - paddle.Length;
+            if (moveLeft || moveRight)
             {
-                paddlePosition -= paddle.Length;
-            }
-            else if (key.Key == ConsoleKey.RightArrow && paddlePosition < Console.WindowWidth - paddle.Length)
-            {
-                paddlePosition += paddle.Length;
+                var direction = moveLeft ? -1 : 1;
+                paddlePosition += direction * 3 * paddle.Length / 4;
             }
         }
     }
 
     static void MoveParticles()
     {
-        foreach (var particle in particles.ToList())
+        for (var index = particles.Count - 1; index >= 0; index--)
         {
+            var particle = particles[index];
             particle.Y++;
             if (particle.Y >= Console.WindowHeight - 1)
             {
+                score++;
                 particles.Remove(particle);
             }
         }
