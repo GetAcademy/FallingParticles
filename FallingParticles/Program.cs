@@ -1,4 +1,4 @@
-﻿using FallingParticles;
+using FallingParticles;
 
 class Program
 {
@@ -90,13 +90,18 @@ class Program
     {
         if (Console.KeyAvailable)
         {
-            var key = Console.ReadKey(true);
-            var moveLeft = key.Key == ConsoleKey.LeftArrow && paddlePosition >= paddleMoveDistance;
-            var moveRight = key.Key == ConsoleKey.RightArrow && paddlePosition < Console.WindowWidth - paddle.Length;
+            var cki = Console.ReadKey(true);
+            var moveLeft = cki.Key == ConsoleKey.LeftArrow && paddlePosition >= paddleMoveDistance;
+            var moveRight = cki.Key == ConsoleKey.RightArrow && paddlePosition < Console.WindowWidth - paddle.Length;
             if (moveLeft || moveRight)
             {
                 var direction = moveLeft ? -1 : 1;
                 paddlePosition += direction * 3 * paddle.Length / 4;
+            }
+            else if (cki.Key == ConsoleKey.Q) {
+                Console.Clear();
+                Console.CursorVisible = true;
+                Environment.Exit(0);
             }
         }
     }
