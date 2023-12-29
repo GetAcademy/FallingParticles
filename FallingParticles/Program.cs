@@ -98,7 +98,7 @@ class Program
                 var direction = moveLeft ? -1 : 1;
                 paddlePosition += direction * 3 * paddle.Length / 4;
             }
-            else if (cki.Key.ToString().ToLower() == "q") {
+            else if (cki.Key == ConsoleKey.Q) {
                 Console.Clear();
                 Console.CursorVisible = true;
                 Environment.Exit(0);
