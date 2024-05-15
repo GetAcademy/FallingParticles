@@ -3,14 +3,13 @@
 class Program
 {
     static int paddlePosition;
-    private static int paddleMoveDistance = 6;
+    static int paddleMoveDistance = 6;
     static string paddle = "========";
     static List<Particle> particles = new List<Particle>();
-    static bool isGameOver = false;
     static int level;
     static int score;
     static int gameRoundsBetweenSpawn;
-    private static readonly Random random = new Random();
+    static readonly Random random = new Random();
 
     static void Main()
     {
@@ -56,7 +55,6 @@ class Program
         var centerX = Console.WindowWidth / 2;
         paddlePosition = centerX - (centerX % paddleMoveDistance);
         particles.Clear();
-        isGameOver = false;
         score = 0;
         level = 1;
         InitGameRoundsBetweenSpawn();
